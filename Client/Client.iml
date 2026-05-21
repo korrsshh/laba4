@@ -8,5 +8,17 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="Communicator" />
+    <orderEntry type="module-library" exported="">
+      <library>
+        <CLASSES>
+          <root url="jar://$USER_HOME$/Downloads/jakarta.persistence-api-3.1.0.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="library" name="springframework.data.spring.jpa" level="project" />
+    <orderEntry type="library" exported="" name="openjfx.javafx.controls" level="project" />
+    <orderEntry type="library" exported="" name="openjfx.javafx.fxml" level="project" />
   </component>
 </module>
