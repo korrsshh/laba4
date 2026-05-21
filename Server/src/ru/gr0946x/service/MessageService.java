@@ -86,4 +86,46 @@ public class MessageService {
             em.close();
         }
     }
+
+    public List<Message> findAllBroadcasts() {
+        EntityManager em = emf.createEntityManager();
+        try {
+            return em.createQuery(
+                    "SELECT m FROM Message m WHERE m.recipientId = 0 " +
+                    "ORDER BY m.sentAt ASC",
+                    Message.class)
+                    .getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
+    public List<Message> findBroadcasts(int limit) {
+        EntityManager em = emf.createEntityManager();
+        try {
+            return em.createQuery(
+                    "SELECT m FROM Message m WHERE m.recipientId = 0 " +
+                    "ORDER BY m.sentAt ASC",
+                    Message.class)
+                    .setMaxResults(limit)
+                    .getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
+    public List<Message> searchBroadcasts(String searchText) {
+        EntityManager em = emf.createEntityManager();
+        try {
+            return em.createQuery(
+                    "SELECT m FROM Message m WHERE m.recipientId = 0 AND " +
+                    "LOWER(m.text) LIKE LOWER(CONCAT('%', :searchText, '%')) " +
+                    "ORDER BY m.sentAt DESC",
+                    Message.class)
+                    .setParameter("searchText", searchText)
+                    .getResultList();
+        } finally {
+            em.close();
+        }
+    }
 }

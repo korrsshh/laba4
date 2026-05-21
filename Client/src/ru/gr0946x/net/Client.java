@@ -98,6 +98,16 @@ public class Client {
         sendData(data);
     }
 
+    public void getBroadcastHistory() {
+        String data = "GET_BROADCAST_HISTORY" + ProtocolConstants.COMMAND_SEPARATOR;
+        sendData(data);
+    }
+
+    public void markBroadcastAsRead() {
+        String data = "MARK_BROADCAST_READ" + ProtocolConstants.COMMAND_SEPARATOR;
+        sendData(data);
+    }
+
     public void stop(){
         communicator.stop();
     }

@@ -106,6 +106,12 @@ public class GuiUi extends Application implements Ui {
         leftPanel.setStyle("-fx-border-color: #cccccc; -fx-border-width: 0 1 0 0;");
         leftPanel.setPrefWidth(200);
         
+        // Broadcast chat button
+        Button broadcastChatButton = new Button("ОБЩИЙ ЧАТ");
+        broadcastChatButton.setStyle("-fx-font-weight: bold; -fx-padding: 10;");
+        broadcastChatButton.setMaxWidth(Double.MAX_VALUE);
+        broadcastChatButton.setOnAction(e -> selectBroadcastChat());
+        
         Label usersLabel = new Label("Онлайн пользователи:");
         usersLabel.setStyle("-fx-font-weight: bold;");
         
@@ -123,7 +129,7 @@ public class GuiUi extends Application implements Ui {
         refreshButton.setOnAction(e -> client.requestOnlineUsers());
         refreshButton.setMaxWidth(Double.MAX_VALUE);
         
-        leftPanel.getChildren().addAll(usersLabel, usersList, refreshButton);
+        leftPanel.getChildren().addAll(broadcastChatButton, usersLabel, usersList, refreshButton);
         return leftPanel;
     }
 
@@ -250,17 +256,29 @@ public class GuiUi extends Application implements Ui {
         sendButton.setDisable(false);
     }
 
+    private void selectBroadcastChat() {
+        selectedChatUser = null;
+        selectedUserLabel.setText("ОБЩИЙ ЧАТ");
+        chatArea.clear();
+        client.getBroadcastHistory();
+        client.markBroadcastAsRead();
+        searchButton.setDisable(true);
+        sendButton.setDisable(false);
+    }
+
     private void sendMessage() {
-        if (selectedChatUser == null) {
-            showError("Выберите собеседника");
-            return;
-        }
-        
         String text = inputArea.getText().trim();
         if (text.isEmpty()) return;
-        
-        client.sendPrivateMessage(selectedChatUser, text);
-        appendToChat("Вы: " + text);
+
+        if (selectedChatUser == null) {
+            // Broadcasting to general chat
+            client.sendBroadcastMessage(text);
+            appendToChat("Вы (личное) к [ВСЕМ]: " + text);
+        } else {
+            // Private message to selected user
+            client.sendPrivateMessage(selectedChatUser, text);
+            appendToChat("Вы (личное) к " + selectedChatUser + ": " + text);
+        }
         inputArea.clear();
     }
 
@@ -354,6 +372,16 @@ public class GuiUi extends Application implements Ui {
                     break;
                 case "SEARCH_END":
                     appendToChat("=== Конец поиска ===");
+                    break;
+                case "BROADCAST_START":
+                    chatArea.clear();
+                    appendToChat("=== ОБЩИЙ ЧАТ ===");
+                    break;
+                case "BROADCAST_MESSAGE":
+                    appendToChat(content);
+                    break;
+                case "BROADCAST_END":
+                    appendToChat("=== Конец общего чата ===");
                     break;
                 default:
                     if (content.startsWith("REQUEST")) {

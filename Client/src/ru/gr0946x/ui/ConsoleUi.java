@@ -62,6 +62,9 @@ public class ConsoleUi implements Ui{
                         client.markAsRead(currentChat);
                     } else if (userData.startsWith("/users")) {
                         client.requestOnlineUsers();
+                    } else if (userData.startsWith("/broadcast")) {
+                        client.getBroadcastHistory();
+                        client.markBroadcastAsRead();
                     } else if (userData.startsWith("/private ")) {
                         String[] parts = userData.substring(9).split(" ", 2);
                         if (parts.length == 2) {
@@ -134,6 +137,15 @@ public class ConsoleUi implements Ui{
                     }
                 } else if (data.startsWith("HISTORY_END")) {
                     System.out.println("--- Конец истории ---\n");
+                } else if (data.startsWith("BROADCAST_START")) {
+                    System.out.println("\n=== ОБЩИЙ ЧАТ ===");
+                } else if (data.startsWith("BROADCAST_MESSAGE")) {
+                    String[] parts = data.split("\\:", 2);
+                    if (parts.length == 2) {
+                        System.out.println(parts[1]);
+                    }
+                } else if (data.startsWith("BROADCAST_END")) {
+                    System.out.println("=== Конец общего чата ===\n");
                 } else if (data.startsWith("SEARCH_START")) {
                     System.out.println("\n=== Результаты поиска ===");
                 } else if (data.startsWith("SEARCH_RESULT")) {

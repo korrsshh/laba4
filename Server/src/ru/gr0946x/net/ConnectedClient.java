@@ -161,6 +161,12 @@ public class ConnectedClient {
             case "MARK_AS_READ":
                 handleMarkAsRead(content);
                 break;
+            case "GET_BROADCAST_HISTORY":
+                handleGetBroadcastHistory();
+                break;
+            case "MARK_BROADCAST_READ":
+                handleMarkBroadcastAsRead();
+                break;
             default:
                 // Legacy support - treat as broadcast message
                 handleBroadcastMessage(data);
@@ -216,6 +222,8 @@ public class ConnectedClient {
 
     private void handleBroadcastMessage(String messageText) {
         Message msg = new Message(currentUser.getId(), 0L, messageText);
+        // Set to DELIVERED immediately since we're broadcasting to all online users
+        msg.setStatus(ru.gr0946x.entity.MessageStatus.DELIVERED);
         messageService.save(msg);
 
         String broadcast = currentUser.getNick() + ProtocolConstants.AUTHOR_SEPARATOR + messageText;
@@ -343,6 +351,33 @@ public class ConnectedClient {
         if (senderClient != null) {
             senderClient.sendData("MESSAGES_READ" + ProtocolConstants.COMMAND_SEPARATOR
                     + currentUser.getNick());
+        }
+    }
+
+    private void handleGetBroadcastHistory() {
+        List<Message> broadcasts = messageService.findAllBroadcasts();
+        sendData("BROADCAST_START" + ProtocolConstants.COMMAND_SEPARATOR);
+        for (Message m : broadcasts) {
+            Optional<User> sender = userService.findById(m.getSenderId());
+            String senderNick = sender.isPresent() ? sender.get().getNick() : "Неизвестный";
+            sendData("BROADCAST_MESSAGE" + ProtocolConstants.COMMAND_SEPARATOR
+                    + senderNick + ": " + m.getText() + " (" + m.getStatus() + ")");
+        }
+        sendData("BROADCAST_END" + ProtocolConstants.COMMAND_SEPARATOR);
+    }
+
+    private void handleMarkBroadcastAsRead() {
+        // Find all DELIVERED broadcast messages and mark as READ
+        List<Message> broadcasts = messageService.findAllBroadcasts();
+        for (Message msg : broadcasts) {
+            // Mark as READ only if:
+            // 1. Status is DELIVERED
+            // 2. Current user is not the sender
+            if (msg.getStatusEnum() == ru.gr0946x.entity.MessageStatus.DELIVERED && 
+                !msg.getSenderId().equals(currentUser.getId())) {
+                msg.setStatus(ru.gr0946x.entity.MessageStatus.READ);
+                messageService.save(msg);
+            }
         }
     }
 
